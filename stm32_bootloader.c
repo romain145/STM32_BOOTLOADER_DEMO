@@ -27,9 +27,6 @@ pRESULT loadAddress(const uint8_t * address);
 
 void resetSTM(void)
 {
-  platform_delay_ms(100);
-	platform_configure_reset_pin(1);
-	platform_delay_ms(100);
 	platform_configure_reset_pin(0);
 	platform_delay_ms(100);
 	platform_configure_reset_pin(1);
@@ -39,7 +36,7 @@ void resetSTM(void)
 void startBootloader(void){
   platform_init();
 	platform_gpio_init();
-  platform_delay_ms(1000);
+  //platform_delay_ms(1000);
   resetSTM();
 }
 
@@ -57,14 +54,16 @@ pRESULT checkAndEraseSTM(void)
   */
     uint16_t eraseLoopNum = 10;  //up to 30
     uint16_t sectorsPerLoop =4;
+    char buf;
     
     startBootloader();
-    platform_delay_ms(1000);
+    platform_delay_ms(100);
 #if (BOOTLOADER_PORT==BOOTLOADER_UART)
+    platform_flush();
     if(bootloaderSync()!=RES_OK){  //only available in UART protocol 
       return RES_FAIL;
     }
-    platform_delay_ms(2000);
+    platform_delay_ms(200);
 #endif
     if(bootloaderGet()!=RES_OK){
     	return RES_FAIL;
@@ -278,10 +277,10 @@ pRESULT bootloaderReleaseMemProtect(void){
   LogDebugInfo( ("Slave MCU IAP: UPROTECT MEMORY"));
 #endif
   uint8_t cmd[] = {0x73, 0x8C};
-  if (sendBytesWithAck(cmd, sizeof(cmd), 1, 1000) == RES_OK)
+  if (sendBytesWithAck(cmd, sizeof(cmd), 1, 100) == RES_OK)
   {
     uint8_t tmpData[1];
-    if(platform_read_with_timeout( tmpData, 1, 10000)==RES_OK){
+    if(platform_read_with_timeout( tmpData, 1, 1000)==RES_OK){
       return RES_OK;
     }
   }
@@ -412,7 +411,7 @@ pRESULT flashSlavePage(const uint8_t *address, const uint8_t *dataBuf,uint16_t l
   platform_write( tx_data, writeNum+3);
 
 	uint8_t tmpData[1];
-	pRESULT res = platform_read_with_timeout( tmpData, 1,20000);
+	pRESULT res = platform_read_with_timeout( tmpData, 1,2000);
 	if (res == RES_OK)
 	{
 		if(tmpData[0] == ACK){
@@ -450,7 +449,7 @@ pRESULT verifySlavePage(const uint8_t *address, const uint8_t *dataBuf ,uint16_t
   tx_data[1]= 0xFF^readNum;
   bootloaderRead();
   loadAddress(address);
-  pRESULT res =sendBytesWithAck(tx_data, 2, 1, 1000);
+  pRESULT res =sendBytesWithAck(tx_data, 2, 1, 100);
   if (res != RES_OK)
   {
 #ifdef ENABLE_DEBUG_LOG
@@ -459,7 +458,7 @@ pRESULT verifySlavePage(const uint8_t *address, const uint8_t *dataBuf ,uint16_t
     return RES_FAIL;   
   }
 	uint8_t rx_data[len+1];
-	res = platform_read_with_timeout( rx_data, len,10000);
+	res = platform_read_with_timeout( rx_data, len, 10000);
 	if (res == RES_OK)
 	{
 

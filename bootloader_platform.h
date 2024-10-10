@@ -85,6 +85,9 @@ pRESULT platform_deinit(void);
   * @retval result 0 = RES_OK  -1 = RES_FAIL
   */
 pRESULT platform_read_with_timeout( uint8_t *bufp, uint16_t len,int timeout );
+
+void platform_flush();
+
 /**
   * @brief  Transmit in Master I2C mode  / UART
   * @param  reg       7 bit I2C address, 0x0xxx xxxx

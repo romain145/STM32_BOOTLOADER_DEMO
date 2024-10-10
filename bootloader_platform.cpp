@@ -19,13 +19,13 @@
 #define MAX_ESP_ARDUINO_IIC_BUFF_LEN            32       //Arduino max IIC buffer size
 
 int boot0Pin = 14;                                       //Arduino PIN idx
-int resetPin = 13;                                       //Arduino PIN idx
+int resetPin = 19;                                       //Arduino PIN idx
 #if (BOOTLOADER_PORT==BOOTLOADER_I2C)
 //  int wireSLKPin = 22;                                       Arduino default PIN idx
 //  int wireSDAPin = 21;                                       Arduino default PIN idx
 #elif (BOOTLOADER_PORT==BOOTLOADER_UART)
-  int uart1TXPin = 21;                                       //Arduino PIN idx
-  int uart1RXPin = 22;                                       //Arduino PIN idx
+  int uart1TXPin = 18; // SCLK - STMRX                                      //Arduino PIN idx
+  int uart1RXPin = 27; // CS3  - STMTX                                   //Arduino PIN idx
 #endif
 
 
@@ -35,7 +35,7 @@ pRESULT platform_init(void){
   Wire.setClock(400000); 
   Wire.begin();   
 #elif (BOOTLOADER_PORT==BOOTLOADER_UART)
-  Serial1.begin(57600, SERIAL_8N1, uart1RXPin , uart1TXPin );
+  Serial1.begin(115200, SERIAL_8N1, uart1RXPin , uart1TXPin );
 
 #endif
   
@@ -113,6 +113,11 @@ pRESULT platform_read_with_timeout( uint8_t *bufp, uint16_t len,int timeout ){
   
 }
 
+void platform_flush()
+{
+  Serial1.flush();
+  while (Serial1.read() > 0);
+}
 
 
 
